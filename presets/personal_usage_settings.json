@@ -1,0 +1,82 @@
+{
+  "language": "vi-VN",
+  "displayCurrency": "auto",
+  "themeAccent": "host",
+  "fontScale": "md",
+  "modernUi": true,
+  "experimentalModernUi": true,
+  "weeklyTokenBudget": 150000000,
+  "weeklyCostBudget": 100,
+  "weeklyLimitMode": "official",
+  "modelDisplayMode": "short",
+  "showUpstreamModel": false,
+  "pluginUpdateMode": "manual",
+  "autoUpdatePlugin": false,
+  "windowMountMode": "composer-top",
+  "enableWindowOverlay": true,
+  "popoverWidthMode": "auto",
+  "popoverWidth": 580,
+  "enableCliStatusLine": true,
+  "cliStatusLineSlots": null,
+  "standalonePort": 0,
+  "autoConfigureLaunch": true,
+  "enableRemoteSshTelemetry": true,
+  "showTopbarMultiSession": true,
+  "contextAgentMode": "main",
+  "topbarCapsuleSlots": [
+    "tps",
+    "context",
+    "gemini_5h",
+    "gemini_weekly"
+  ],
+  "hoverModules": [
+    "metrics",
+    "context",
+    "quotas"
+  ],
+  "hoverSyncOverviewMetrics": true,
+  "hoverMetricStyle": "medium",
+  "hoverMetrics": [
+    "tps",
+    "ttft",
+    "avg_tps",
+    "step_cost"
+  ],
+  "overviewModules": [
+    "metrics",
+    "context",
+    "quotas",
+    "live_tasks"
+  ],
+  "overviewMetricStyle": "medium",
+  "overviewMetrics": [
+    "tps",
+    "ttft",
+    "avg_tps",
+    "step_cost"
+  ],
+  "quotaDisplayMode": "used",
+  "showStepTurnRail": false,
+  "showStepAgentBadge": true,
+  "showStepSpeedColor": false,
+  "showStepFilterToolbar": false,
+  "stepTokenComboFormat": "context:in:cache",
+  "stepTableColumns": [
+    "step",
+    "model",
+    "tps",
+    "ttft",
+    "tokens_combo",
+    "cache",
+    "cost"
+  ],
+  "experimentalQuotaReservation": true,
+  "accountQuotaRefreshMinutes": 60,
+  "developerModeEnabled": false,
+  "riskyFeaturesEnabled": false,
+  "accountSwitchRiskAccepted": false,
+  "contextWindowRiskAccepted": false,
+  "contextWindowMainEnabled": true,
+  "contextWindowSwarmEnabled": false,
+  "modelContextWindows": {}
+}
