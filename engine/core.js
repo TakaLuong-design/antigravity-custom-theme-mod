@@ -596,7 +596,9 @@
       window.__AGY_BLUR_TIMER__ = 0;
     }
     const ms = window.__AGY_METRICS_STATE__ || (window.__AGY_METRICS_STATE__ = { glassBg: '', beforeClip: '', holeClip: '' });
-    if (!wpUrl) {
+    const pxMatch = String(blurStr !== undefined ? blurStr : '3px').match(/(\d+(?:\.\d+)?)/);
+    const blurVal = pxMatch ? parseFloat(pxMatch[1]) : 3;
+    if (!wpUrl || !(blurVal > 0)) {
       window.__AGY_BLUR_GEN__ = (window.__AGY_BLUR_GEN__ || 0) + 1;
       ms.glassBg = '';
       flushMetricsStyle();
@@ -631,9 +633,8 @@
           canvas.height = h;
           const ctx = canvas.getContext('2d');
           if (!ctx) return;
-          const pxMatch = String(blurStr !== undefined ? blurStr : '3px').match(/(\d+(?:\.\d+)?)/);
-          const scaledBlur = Math.max(0, Math.min(16, Math.round((pxMatch ? parseFloat(pxMatch[1]) : 3) * 0.75)));
-          ctx.filter = scaledBlur > 0 ? `blur(${scaledBlur}px)` : 'none';
+          const scaledBlur = Math.max(1, Math.min(16, Math.round(blurVal * 0.75)));
+          ctx.filter = `blur(${scaledBlur}px)`;
           ctx.drawImage(img, -12, -12, w + 24, h + 24);
           ctx.filter = 'none';
           ctx.fillStyle = `rgba(${overlayRgb}, ${overlayAlpha})`;
@@ -1522,15 +1523,21 @@
       }
     ` : '';
 
-    const effectiveBlur = Number.isFinite(st.glassBlur) ? `${st.glassBlur}px` : (mainTheme.headerBlur || '3px');
+    const rawBlurPx = Number.isFinite(st.glassBlur)
+      ? st.glassBlur
+      : (parseFloat(String(mainTheme.headerBlur || '3')) || 0);
+    const effectiveBlurPx = Math.max(0, Math.min(16, rawBlurPx));
+    const effectiveBlur = `${effectiveBlurPx}px`;
     const useUnifiedGlass = Boolean(st.wpEnabled && wpUrl && mainTheme.unifiedGlass);
-    if (useUnifiedGlass && typeof hookShellMetrics === 'function') {
-      hookShellMetrics(true);
-    }
-    if (useUnifiedGlass && !isVideoMode) {
+    const useBakedGlass = Boolean(useUnifiedGlass && !isVideoMode && effectiveBlurPx > 0);
+    window.__AGY_USE_BAKED_GLASS__ = useBakedGlass;
+    if (useBakedGlass) {
       syncPrebakedGlass(wpUrl, overlayRgb, overlayAlpha, mainTheme.headerBg || '', effectiveBlur, opts.debounceSave ? 80 : 0);
     } else {
       syncPrebakedGlass(null);
+    }
+    if (useUnifiedGlass && typeof hookShellMetrics === 'function') {
+      hookShellMetrics(true);
     }
     syncVideoAndRevealLayer(st, mainTheme, wpUrl, wpVideoUrl, isVideoMode, overlayRgb, overlayAlpha, bgPosition, effectiveBlur);
 
@@ -1574,8 +1581,8 @@
         inset: 0;
         z-index: 1;
         pointer-events: none;
-        ${isVideoMode ? `
-        background-color: ${mainTheme.sidebarBg || 'rgba(7, 10, 18, 0.34)'};
+        ${(!useBakedGlass) ? `
+        background-color: ${mainTheme.sidebarBg || mainTheme.headerBg || 'rgba(7, 10, 18, 0.34)'};
         background-image: none;
         ` : `
         background-color: ${mainTheme.headerBg};
@@ -1908,6 +1915,11 @@
       try { window.__AGY_SHELL_RO__.disconnect(); } catch (e) {}
       window.__AGY_SHELL_RO__ = null;
     }
+    window.__AGY_HOLE_EL__ = null;
+    window.__AGY_SIDE_EL__ = null;
+    window.__AGY_SIDE_WRAP_EL__ = null;
+    window.__AGY_LAST_SIDE_OPEN__ = null;
+    window.__AGY_USE_BAKED_GLASS__ = false;
     if (window.__AGY_SCROLL_AC__) {
       try { window.__AGY_SCROLL_AC__.abort(); } catch (e) {}
     }
@@ -2065,6 +2077,20 @@
     });
   }
 
+  function isSidePanelVisible(sideBody) {
+    if (!sideBody || sideBody.children.length === 0) return false;
+    if (sideBody.closest('[data-side-panel-open="false"], [data-aux-pane-open="false"]')) return false;
+    const cs = getComputedStyle(sideBody);
+    if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return false;
+    return true;
+  }
+
+  function findSidePanelWrap(sideBody) {
+    if (!sideBody) return null;
+    const sized = sideBody.closest('[data-split-sized]');
+    return (sized && sized.parentElement) || sideBody.parentElement;
+  }
+
   function syncShellMetrics() {
     const shell = findActiveShell();
     if (!shell) return;
@@ -2107,6 +2133,7 @@
     ms.holeClip = '';
 
     const sideBody = shell.querySelector('[data-side-panel-body="true"]');
+    const sideWrap = findSidePanelWrap(sideBody);
     if (sideBody) {
       if (sideBody.querySelector('[data-browser-hole]:not([data-browser-hole="false"])')) {
         sideBody.dataset.agyHasHole = '1';
@@ -2117,17 +2144,27 @@
         try { window.__AGY_SHELL_RO__.observe(sideBody); } catch (e) {}
         window.__AGY_SIDE_EL__ = sideBody;
       }
-      const sRect = sideBody.getBoundingClientRect();
-      const hasContent = sideBody.children.length > 0;
-      if (hasContent && sRect.width > 24 && sRect.height > 24 && sRect.left < shellRect.right - 8 && sRect.right > shellRect.left + 8) {
-        const sl = Math.max(sw, Math.round(sRect.left - shellRect.left));
-        const st = Math.max(hdrBottom, Math.round(sRect.top - shellRect.top));
-        const sr = Math.min(Math.round(shellRect.width), Math.max(sl, Math.round(sRect.right - shellRect.left)));
-        const sb = Math.min(Math.round(shellRect.height), Math.max(st, Math.round(sRect.bottom - shellRect.top)));
-        if (sr - sl > 20 && sb - st > 20) {
-          ms.beforeClip = `polygon(evenodd, 0 0, 100% 0, 100% ${hdrBottom}px, ${sw}px ${hdrBottom}px, ${sw}px 100%, 0 100%, 0 0, ${sl}px ${st}px, ${sr}px ${st}px, ${sr}px ${sb}px, ${sl}px ${sb}px, ${sl}px ${st}px)`;
-          flushMetricsStyle();
-          return;
+      if (window.__AGY_SHELL_RO__ && sideWrap && window.__AGY_SIDE_WRAP_EL__ !== sideWrap) {
+        try { window.__AGY_SHELL_RO__.observe(sideWrap); } catch (e) {}
+        window.__AGY_SIDE_WRAP_EL__ = sideWrap;
+      }
+      if (window.__AGY_USE_BAKED_GLASS__ && isSidePanelVisible(sideBody)) {
+        const sRect = sideBody.getBoundingClientRect();
+        const wRect = sideWrap ? sideWrap.getBoundingClientRect() : sRect;
+        const visLeft = Math.max(sRect.left, wRect.left);
+        const visRight = Math.min(sRect.right, wRect.right);
+        const visTop = Math.max(sRect.top, wRect.top);
+        const visBottom = Math.min(sRect.bottom, wRect.bottom);
+        if (visRight - visLeft > 24 && visBottom - visTop > 24 && visLeft < shellRect.right - 8 && visRight > shellRect.left + 8) {
+          const sl = Math.max(sw, Math.round(visLeft - shellRect.left));
+          const st = Math.max(hdrBottom, Math.round(visTop - shellRect.top));
+          const sr = Math.min(Math.round(shellRect.width), Math.max(sl, Math.round(visRight - shellRect.left)));
+          const sb = Math.min(Math.round(shellRect.height), Math.max(st, Math.round(visBottom - shellRect.top)));
+          if (sr - sl > 20 && sb - st > 20) {
+            ms.beforeClip = `polygon(evenodd, 0 0, 100% 0, 100% ${hdrBottom}px, ${sw}px ${hdrBottom}px, ${sw}px 100%, 0 100%, 0 0, ${sl}px ${st}px, ${sr}px ${st}px, ${sr}px ${sb}px, ${sl}px ${sb}px, ${sl}px ${st}px)`;
+            flushMetricsStyle();
+            return;
+          }
         }
       }
     }
@@ -2164,6 +2201,7 @@
       window.__AGY_SHELL_RO__ = null;
       window.__AGY_HOLE_EL__ = null;
       window.__AGY_SIDE_EL__ = null;
+      window.__AGY_SIDE_WRAP_EL__ = null;
     }
     window.__AGY_METRICS_SHELL__ = shell;
     if (!window.__AGY_SHELL_RO__ && typeof ResizeObserver !== 'undefined') {
@@ -2178,9 +2216,11 @@
     window.__AGY_LAST_HOLE_ATTR__ = holeAttr;
     const sideBody = shell.querySelector('[data-side-panel-body="true"]');
     const sideHasChild = sideBody ? (sideBody.children.length > 0) : false;
-    const sideChanged = window.__AGY_LAST_SIDE_EL__ !== sideBody || window.__AGY_LAST_SIDE_HAS_CHILD__ !== sideHasChild;
+    const sideOpen = isSidePanelVisible(sideBody);
+    const sideChanged = window.__AGY_LAST_SIDE_EL__ !== sideBody || window.__AGY_LAST_SIDE_HAS_CHILD__ !== sideHasChild || window.__AGY_LAST_SIDE_OPEN__ !== sideOpen;
     window.__AGY_LAST_SIDE_EL__ = sideBody;
     window.__AGY_LAST_SIDE_HAS_CHILD__ = sideHasChild;
+    window.__AGY_LAST_SIDE_OPEN__ = sideOpen;
     if (force || shellChanged || holeAttrChanged || sideChanged) {
       syncShellMetrics();
     }
@@ -2480,6 +2520,8 @@
 
   window.__AGY_HOLE_EL__ = null;
   window.__AGY_SIDE_EL__ = null;
+  window.__AGY_SIDE_WRAP_EL__ = null;
+  window.__AGY_LAST_SIDE_OPEN__ = null;
   window.__AGY_METRICS_SHELL__ = null;
   if (window.__AGY_MODAL_OBSERVER__) {
     window.__AGY_MODAL_OBSERVER__.disconnect();
@@ -2491,7 +2533,7 @@
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['data-has-browser-hole', 'data-browser-hole']
+      attributeFilter: ['data-has-browser-hole', 'data-browser-hole', 'data-side-panel-open', 'data-aux-pane-open']
     });
   }
   tick(true);
