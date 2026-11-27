@@ -20,8 +20,10 @@ window.__AGY_LAZY_STUDIO__ = function(ctx) {
     STORAGE_AVATAR_SIZE,
     STORAGE_AVATAR_RADIUS,
     STORAGE_BOOT_INTRO,
+    STORAGE_BOOT_CONFIG,
     STORAGE_SKETCH_REVEAL,
     STORAGE_TAWA_GREETING,
+    DEFAULT_BOOT_CONFIG,
     CHECK_SVG,
     INPUT_STYLES,
     escapeHtml,
@@ -196,6 +198,9 @@ window.__AGY_LAZY_STUDIO__ = function(ctx) {
               <button id="agy-custom-vg-toggle" type="button" style="padding: 4px 10px; border-radius: 7px; background: rgba(255,255,255,0.08); border: 1px solid ${mainTheme.borderColor}; color: #e4e4e7; font-size: 11.5px; cursor: pointer;">
                 Tùy chỉnh Voice &amp; Câu chào ▾
               </button>
+              <button id="agy-boot-cfg-toggle" type="button" style="padding: 4px 10px; border-radius: 7px; background: rgba(255,255,255,0.08); border: 1px solid ${mainTheme.borderColor}; color: #e4e4e7; font-size: 11.5px; cursor: pointer;">
+                Tùy chỉnh Intro ▾
+              </button>
               <button id="agy-replay-boot-btn" type="button" style="padding: 4px 10px; border-radius: 7px; background: rgba(255,255,255,0.08); border: 1px solid ${mainTheme.borderColor}; color: #e4e4e7; font-size: 11.5px; cursor: pointer;">
                 Replay Intro
               </button>
@@ -234,6 +239,35 @@ window.__AGY_LAZY_STUDIO__ = function(ctx) {
                 <button id="agy-greeting-reset" type="button" style="padding: 4px 10px; border-radius: 7px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: #d4d4d8; font-size: 11.5px; cursor: pointer;">Xóa hết</button>
                 <button id="agy-greeting-save" type="button" style="padding: 4px 12px; border-radius: 7px; background: ${mainTheme.primary}; color: #090d16; font-weight: 600; font-size: 11.5px; border: none; cursor: pointer;">Lưu câu chào</button>
               </div>
+            </div>
+          </div>
+          <div id="agy-boot-cfg-box" style="display: none; flex-direction: column; gap: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <span style="font-size: 12.5px; font-weight: 600; color: #f4f4f5;">Nội dung Màn hình Khởi động (Boot HUD)</span>
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #d4d4d8; cursor: pointer;">
+                <input id="agy-bc-auto-step2" type="checkbox" ${(st.bootConfig?.autoStep2 !== false) ? 'checked' : ''} style="accent-color: ${mainTheme.primary}; cursor: pointer;" />
+                Tự chạy hết Bước 2 (chỉ bấm 1 lần ở Bước 1)
+              </label>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px;">
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #a1a1aa;">Thương hiệu (Logo/Header)<input id="agy-bc-brandTitle" type="text" value="${escapeHtml(st.bootConfig?.brandTitle || '')}" style="background: rgba(0,0,0,0.38); color: #f4f4f5; border: 1px solid ${mainTheme.borderColor}; border-radius: 6px; padding: 5px 8px; font-size: 12px;" /></label>
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #a1a1aa;">Phụ đề thương hiệu<input id="agy-bc-brandSub" type="text" value="${escapeHtml(st.bootConfig?.brandSub || '')}" style="background: rgba(0,0,0,0.38); color: #f4f4f5; border: 1px solid ${mainTheme.borderColor}; border-radius: 6px; padding: 5px 8px; font-size: 12px;" /></label>
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #a1a1aa;">Tiêu đề Bước 1<input id="agy-bc-stage1Title" type="text" value="${escapeHtml(st.bootConfig?.stage1Title || '')}" style="background: rgba(0,0,0,0.38); color: #f4f4f5; border: 1px solid ${mainTheme.borderColor}; border-radius: 6px; padding: 5px 8px; font-size: 12px;" /></label>
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #a1a1aa;">Nút bấm Bước 1<input id="agy-bc-stage1Btn" type="text" value="${escapeHtml(st.bootConfig?.stage1Btn || '')}" style="background: rgba(0,0,0,0.38); color: #f4f4f5; border: 1px solid ${mainTheme.borderColor}; border-radius: 6px; padding: 5px 8px; font-size: 12px;" /></label>
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #a1a1aa;">Tiêu đề Bước 2<input id="agy-bc-stage2Title" type="text" value="${escapeHtml(st.bootConfig?.stage2Title || '')}" style="background: rgba(0,0,0,0.38); color: #f4f4f5; border: 1px solid ${mainTheme.borderColor}; border-radius: 6px; padding: 5px 8px; font-size: 12px;" /></label>
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #a1a1aa;">Tên truy cập (Operator)<input id="agy-bc-operatorName" type="text" value="${escapeHtml(st.bootConfig?.operatorName || '')}" style="background: rgba(0,0,0,0.38); color: #f4f4f5; border: 1px solid ${mainTheme.borderColor}; border-radius: 6px; padding: 5px 8px; font-size: 12px;" /></label>
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #a1a1aa;">Mã định danh (UID)<input id="agy-bc-operatorUid" type="text" value="${escapeHtml(st.bootConfig?.operatorUid || '')}" style="background: rgba(0,0,0,0.38); color: #f4f4f5; border: 1px solid ${mainTheme.borderColor}; border-radius: 6px; padding: 5px 8px; font-size: 12px;" /></label>
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #a1a1aa;">Cấp quyền (Level)<input id="agy-bc-operatorLevel" type="text" value="${escapeHtml(st.bootConfig?.operatorLevel || '')}" style="background: rgba(0,0,0,0.38); color: #f4f4f5; border: 1px solid ${mainTheme.borderColor}; border-radius: 6px; padding: 5px 8px; font-size: 12px;" /></label>
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #a1a1aa;">Thông báo xác thực (Bước 5)<input id="agy-bc-stage5Title" type="text" value="${escapeHtml(st.bootConfig?.stage5Title || '')}" style="background: rgba(0,0,0,0.38); color: #f4f4f5; border: 1px solid ${mainTheme.borderColor}; border-radius: 6px; padding: 5px 8px; font-size: 12px;" /></label>
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #a1a1aa;">Dòng chào (Bước 6)<input id="agy-bc-stage6Welcome" type="text" value="${escapeHtml(st.bootConfig?.stage6Welcome || '')}" style="background: rgba(0,0,0,0.38); color: #f4f4f5; border: 1px solid ${mainTheme.borderColor}; border-radius: 6px; padding: 5px 8px; font-size: 12px;" /></label>
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #a1a1aa;">Tên chính (Bước 6)<input id="agy-bc-stage6Brand" type="text" value="${escapeHtml(st.bootConfig?.stage6Brand || '')}" style="background: rgba(0,0,0,0.38); color: #f4f4f5; border: 1px solid ${mainTheme.borderColor}; border-radius: 6px; padding: 5px 8px; font-size: 12px;" /></label>
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #a1a1aa;">Trạng thái cuối (Bước 6)<input id="agy-bc-stage6Status" type="text" value="${escapeHtml(st.bootConfig?.stage6Status || '')}" style="background: rgba(0,0,0,0.38); color: #f4f4f5; border: 1px solid ${mainTheme.borderColor}; border-radius: 6px; padding: 5px 8px; font-size: 12px;" /></label>
+            </div>
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span id="agy-bc-msg" style="font-size: 11.5px; color: #93c5fd; margin-right: auto;"></span>
+              <button id="agy-bc-reset" type="button" style="padding: 4px 10px; border-radius: 7px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: #d4d4d8; font-size: 11.5px; cursor: pointer;">Mặc định</button>
+              <button id="agy-bc-save" type="button" style="padding: 4px 12px; border-radius: 7px; background: rgba(255,255,255,0.12); border: 1px solid ${mainTheme.borderColor}; color: #f4f4f5; font-size: 11.5px; cursor: pointer;">Lưu Intro</button>
+              <button id="agy-bc-preview" type="button" style="padding: 4px 12px; border-radius: 7px; background: ${mainTheme.primary}; color: #090d16; font-weight: 600; font-size: 11.5px; border: none; cursor: pointer;">Lưu &amp; Chạy thử</button>
             </div>
           </div>
           <div id="agy-import-box" style="display: none; flex-direction: column; gap: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08);">
@@ -497,6 +531,49 @@ window.__AGY_LAZY_STUDIO__ = function(ctx) {
         setTimeout(() => triggerSketchBloomReveal(false), 120);
       });
     }
+
+    const bootCfgToggle = container.querySelector('#agy-boot-cfg-toggle');
+    const bootCfgBox = container.querySelector('#agy-boot-cfg-box');
+    const bootCfgMsg = container.querySelector('#agy-bc-msg');
+    const bcFields = ['brandTitle', 'brandSub', 'stage1Title', 'stage1Btn', 'stage2Title', 'operatorName', 'operatorUid', 'operatorLevel', 'stage5Title', 'stage6Welcome', 'stage6Brand', 'stage6Status'];
+    function readBootCfgFromInputs() {
+      const next = { autoStep2: container.querySelector('#agy-bc-auto-step2')?.checked !== false };
+      bcFields.forEach((f) => {
+        const el = container.querySelector(`#agy-bc-${f}`);
+        if (el) next[f] = el.value;
+      });
+      return next;
+    }
+    function syncBootCfgInputs(cfg) {
+      const autoEl = container.querySelector('#agy-bc-auto-step2');
+      if (autoEl) autoEl.checked = cfg.autoStep2 !== false;
+      bcFields.forEach((f) => {
+        const el = container.querySelector(`#agy-bc-${f}`);
+        if (el) el.value = cfg[f] || '';
+      });
+    }
+    if (bootCfgToggle && bootCfgBox) {
+      bootCfgToggle.addEventListener('click', () => {
+        const open = bootCfgBox.style.display === 'none';
+        bootCfgBox.style.display = open ? 'flex' : 'none';
+        bootCfgToggle.textContent = open ? 'Tùy chỉnh Intro ▴' : 'Tùy chỉnh Intro ▾';
+      });
+    }
+    container.querySelector('#agy-bc-save')?.addEventListener('click', () => {
+      applyTheme({ bootConfig: readBootCfgFromInputs() });
+      if (bootCfgMsg) bootCfgMsg.textContent = 'Đã lưu cấu hình Intro.';
+    });
+    container.querySelector('#agy-bc-preview')?.addEventListener('click', () => {
+      applyTheme({ bootConfig: readBootCfgFromInputs() });
+      closeHostModalsForPreview();
+      mountBootSequence(true);
+    });
+    container.querySelector('#agy-bc-reset')?.addEventListener('click', () => {
+      const defCfg = { ...(DEFAULT_BOOT_CONFIG || {}) };
+      syncBootCfgInputs(defCfg);
+      applyTheme({ bootConfig: defCfg });
+      if (bootCfgMsg) bootCfgMsg.textContent = 'Đã khôi phục mặc định.';
+    });
 
     function compressWallpaperImageFile(file, maxDim = 2560) {
       if (!file || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
@@ -779,7 +856,7 @@ window.__AGY_LAZY_STUDIO__ = function(ctx) {
             throw new Error('Config must be a JSON object');
           }
           const allowed = {};
-          const keys = ['themeName', 'bubbleName', 'inputStyle', 'dimming', 'wpEnabled', 'wpMode', 'customWp', 'customVideo', 'savedImages', 'savedVideos', 'taskVoices', 'taskVoiceEnabled', 'taskVoiceVol', 'customGreetings', 'userAvatar', 'agentAvatar', 'glassBlur', 'avatarSize', 'avatarRadius', 'bootIntro', 'sketchReveal', 'tawaGreeting'];
+          const keys = ['themeName', 'bubbleName', 'inputStyle', 'dimming', 'wpEnabled', 'wpMode', 'customWp', 'customVideo', 'savedImages', 'savedVideos', 'taskVoices', 'taskVoiceEnabled', 'taskVoiceVol', 'customGreetings', 'userAvatar', 'agentAvatar', 'glassBlur', 'avatarSize', 'avatarRadius', 'bootIntro', 'bootConfig', 'sketchReveal', 'tawaGreeting'];
           keys.forEach((k) => {
             if (parsed[k] !== undefined) allowed[k] = parsed[k];
           });
@@ -807,6 +884,7 @@ window.__AGY_LAZY_STUDIO__ = function(ctx) {
       localStorage.removeItem(STORAGE_DIMMING);
       localStorage.removeItem(STORAGE_WP_ENABLED);
       localStorage.removeItem(STORAGE_BOOT_INTRO);
+      localStorage.removeItem(STORAGE_BOOT_CONFIG);
       localStorage.removeItem(STORAGE_SKETCH_REVEAL);
       localStorage.removeItem(STORAGE_TAWA_GREETING);
       localStorage.removeItem(STORAGE_TASK_VOICE_ENABLED);
@@ -832,6 +910,7 @@ window.__AGY_LAZY_STUDIO__ = function(ctx) {
         avatarSize: 32,
         avatarRadius: 50,
         bootIntro: true,
+        bootConfig: { ...(DEFAULT_BOOT_CONFIG || {}) },
         sketchReveal: true,
         tawaGreeting: true
       });

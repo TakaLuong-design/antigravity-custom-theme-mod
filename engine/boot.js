@@ -4,6 +4,8 @@ window.__AGY_LAZY_BOOT__ = function(ctx, forceReplay = false) {
     getState,
     resolveMediaUrl,
     sanitizeCssUrl,
+    escapeHtml,
+    DEFAULT_BOOT_CONFIG,
     clearBootTimers,
     stopBootAudio,
     teardownBootOverlay,
@@ -14,6 +16,8 @@ window.__AGY_LAZY_BOOT__ = function(ctx, forceReplay = false) {
     if (!forceReplay && (!st.bootIntro || window.__AGY_BOOT_PLAYED__)) {
       return;
     }
+    const bc = Object.assign({}, DEFAULT_BOOT_CONFIG || {}, st.bootConfig || {});
+    const esc = (v, fb = '') => (typeof escapeHtml === 'function' ? escapeHtml(v != null && String(v).trim() ? String(v) : fb) : String(v ?? fb));
     window.__AGY_BOOT_PLAYED__ = true;
     teardownBootOverlay();
 
@@ -254,8 +258,8 @@ window.__AGY_LAZY_BOOT__ = function(ctx, forceReplay = false) {
 
       <header class="agy-boot-header">
         <div class="agy-boot-brand">
-          <strong>ANTIGRAVITY</strong>
-          <span class="sub-line">SYNTHESIZE INTELLIGENCE</span>
+          <strong>${esc(bc.brandTitle, 'ANTIGRAVITY')}</strong>
+          <span class="sub-line">${esc(bc.brandSub, 'SYNTHESIZE INTELLIGENCE')}</span>
           <div class="agy-boot-rev">
             <span>REV 0.1.9</span>
             <span>•</span>
@@ -268,31 +272,31 @@ window.__AGY_LAZY_BOOT__ = function(ctx, forceReplay = false) {
       <div class="agy-boot-stage-wrap">
         <div class="agy-boot-stage active" id="agy-stage-0">
           <img class="agy-splash-logo" id="agy-splash-logo" src="${iconColorUrl}" alt="Antigravity" />
-          <div class="agy-splash-wordmark">ANTIGRAVITY</div>
-          <div class="agy-splash-caption">SYNTHESIZE INTELLIGENCE</div>
+          <div class="agy-splash-wordmark">${esc(bc.brandTitle, 'ANTIGRAVITY')}</div>
+          <div class="agy-splash-caption">${esc(bc.brandSub, 'SYNTHESIZE INTELLIGENCE')}</div>
         </div>
 
         <div class="agy-boot-stage" id="agy-stage-1">
-          <div style="margin-bottom:6px"><span class="agy-hud-title" data-stagger="26">YÊU CẦU QUYỀN TRUY CẬP</span></div>
-          <div class="agy-hud-subtitle" data-stagger="14">ACCESS PERMISSION REQUIRED</div>
+          <div style="margin-bottom:6px"><span class="agy-hud-title" data-stagger="26">${esc(bc.stage1Title, 'YÊU CẦU QUYỀN TRUY CẬP')}</span></div>
+          <div class="agy-hud-subtitle" data-stagger="14">${esc(bc.stage1Sub, 'ACCESS PERMISSION REQUIRED')}</div>
           <button class="agy-hud-btn" id="agy-btn-grant" type="button">
-            <span>CẤP QUYỀN &nbsp; GRANT ACCESS</span>
+            <span>${esc(bc.stage1Btn, 'CẤP QUYỀN &nbsp; GRANT ACCESS')}</span>
           </button>
           <div class="agy-hud-hint">Nhấn Enter / Space hoặc bấm nút để tiếp tục</div>
         </div>
 
         <div class="agy-boot-stage" id="agy-stage-2">
-          <div style="margin-bottom:6px"><span class="agy-hud-title" data-stagger="26">XÁC MINH DANH TÍNH</span></div>
-          <div class="agy-hud-subtitle" data-stagger="14">IDENTITY VERIFICATION</div>
+          <div style="margin-bottom:6px"><span class="agy-hud-title" data-stagger="26">${esc(bc.stage2Title, 'XÁC MINH DANH TÍNH')}</span></div>
+          <div class="agy-hud-subtitle" data-stagger="14">${esc(bc.stage2Sub, 'IDENTITY VERIFICATION')}</div>
           <div class="agy-id-table">
-            <div class="agy-id-row"><span>TÊN TRUY CẬP / OPERATOR</span><span>SENSEI</span></div>
-            <div class="agy-id-row"><span>MÃ ĐỊNH DANH / UID</span><span>0042</span></div>
-            <div class="agy-id-row"><span>CẤP QUYỀN / LEVEL</span><span>∞</span></div>
+            <div class="agy-id-row"><span>TÊN TRUY CẬP / OPERATOR</span><span>${esc(bc.operatorName, 'SENSEI')}</span></div>
+            <div class="agy-id-row"><span>MÃ ĐỊNH DANH / UID</span><span>${esc(bc.operatorUid, '0042')}</span></div>
+            <div class="agy-id-row"><span>CẤP QUYỀN / LEVEL</span><span>${esc(bc.operatorLevel, '∞')}</span></div>
           </div>
           <button class="agy-hud-btn" id="agy-btn-confirm" type="button">
             <span>XÁC NHẬN &nbsp; CONFIRM IDENTITY</span>
           </button>
-          <div class="agy-hud-hint">Nhấn Enter / Space hoặc bấm nút để xác nhận</div>
+          <div class="agy-hud-hint">${bc.autoStep2 !== false ? 'Đang tự động xác nhận danh tính...' : 'Nhấn Enter / Space hoặc bấm nút để xác nhận'}</div>
         </div>
 
         <div class="agy-boot-stage" id="agy-stage-morph">
@@ -336,20 +340,20 @@ window.__AGY_LAZY_BOOT__ = function(ctx, forceReplay = false) {
               <div class="agy-orbit-dot w" style="bottom:24%;right:28%"></div>
             </div>
             <div>
-              <div class="agy-hud-title" data-stagger="24" style="font-size:17px;letter-spacing:0.1em;margin-bottom:6px">HOÀN TẤT · ĐÃ XÁC THỰC</div>
+              <div class="agy-hud-title" data-stagger="24" style="font-size:17px;letter-spacing:0.1em;margin-bottom:6px">${esc(bc.stage5Title, 'HOÀN TẤT · ĐÃ XÁC THỰC')}</div>
               <div class="agy-hud-subtitle" data-stagger="14" style="margin-bottom:0;font-size:9px;letter-spacing:0.24em">READ COMPLETE · VERIFIED</div>
             </div>
           </div>
         </div>
 
         <div class="agy-boot-stage" id="agy-stage-6">
-          <div class="agy-welcome-eyebrow" data-stagger="28">WELCOME TO</div>
-          <div class="agy-welcome-solid-box agy-welcome-reveal" style="animation-delay:240ms">ANTIGRAVITY</div>
+          <div class="agy-welcome-eyebrow" data-stagger="28">${esc(bc.stage6Welcome, 'WELCOME TO')}</div>
+          <div class="agy-welcome-solid-box agy-welcome-reveal" style="animation-delay:240ms">${esc(bc.stage6Brand, 'ANTIGRAVITY')}</div>
           <div class="agy-welcome-flare-wrap agy-welcome-reveal" style="animation-delay:360ms">
             <img src="${iconColorUrl}" alt="Antigravity" />
           </div>
           <div class="agy-dot-grid-small agy-welcome-reveal" style="margin-bottom:8px;animation-delay:460ms">A N T I G R A V I T Y</div>
-          <div class="agy-hud-hint agy-welcome-reveal" style="color:#a1a1aa;letter-spacing:0.2em;animation-delay:540ms">CHÀO MỪNG SENSEI • SESSION READY</div>
+          <div class="agy-hud-hint agy-welcome-reveal" style="color:#a1a1aa;letter-spacing:0.2em;animation-delay:540ms">${esc(bc.stage6Status, 'CHÀO MỪNG SENSEI • SESSION READY')}</div>
         </div>
       </div>
 
@@ -603,6 +607,19 @@ window.__AGY_LAZY_BOOT__ = function(ctx, forceReplay = false) {
       triggerScanline();
     }, 450));
 
+    let stage2Triggered = false;
+    function triggerStage2Confirm() {
+      if (stage2Triggered || currentStage !== 2 || !overlay.isConnected || overlay.classList.contains('done')) return;
+      stage2Triggered = true;
+      const btnConfirm = document.getElementById('agy-btn-confirm');
+      if (btnConfirm) btnConfirm.classList.add('triggered');
+      playClickSfx(820, 0.06, 0.05);
+      playTawaVoice(2);
+      const st2 = document.getElementById('agy-stage-2');
+      window.__AGY_BOOT_TIMERS__.push(setTimeout(() => st2 && st2.classList.add('wipe-out'), 240));
+      window.__AGY_BOOT_TIMERS__.push(setTimeout(() => runAutoSequenceAfterConfirm(), 580));
+    }
+
     document.getElementById('agy-btn-grant').addEventListener('click', (e) => {
       if (currentStage !== 1) return;
       e.currentTarget.classList.add('triggered');
@@ -610,17 +627,16 @@ window.__AGY_LAZY_BOOT__ = function(ctx, forceReplay = false) {
       playTawaVoice(1);
       const st1 = document.getElementById('agy-stage-1');
       window.__AGY_BOOT_TIMERS__.push(setTimeout(() => st1 && st1.classList.add('wipe-out'), 240));
-      window.__AGY_BOOT_TIMERS__.push(setTimeout(() => showStage(2, true), 580));
+      window.__AGY_BOOT_TIMERS__.push(setTimeout(() => {
+        showStage(2, true);
+        if (bc.autoStep2 !== false) {
+          window.__AGY_BOOT_TIMERS__.push(setTimeout(() => triggerStage2Confirm(), 1100));
+        }
+      }, 580));
     });
 
-    document.getElementById('agy-btn-confirm').addEventListener('click', (e) => {
-      if (currentStage !== 2) return;
-      e.currentTarget.classList.add('triggered');
-      playClickSfx(820, 0.06, 0.05);
-      playTawaVoice(2);
-      const st2 = document.getElementById('agy-stage-2');
-      window.__AGY_BOOT_TIMERS__.push(setTimeout(() => st2 && st2.classList.add('wipe-out'), 240));
-      window.__AGY_BOOT_TIMERS__.push(setTimeout(() => runAutoSequenceAfterConfirm(), 580));
+    document.getElementById('agy-btn-confirm').addEventListener('click', () => {
+      triggerStage2Confirm();
     });
 
     document.getElementById('agy-boot-skip').addEventListener('click', () => finishBoot(true));

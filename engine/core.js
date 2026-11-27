@@ -65,8 +65,48 @@
   const STORAGE_AVATAR_SIZE = 'agy_avatar_size_v3';
   const STORAGE_AVATAR_RADIUS = 'agy_avatar_radius_v3';
   const STORAGE_BOOT_INTRO = 'agy_boot_intro_v3';
+  const STORAGE_BOOT_CONFIG = 'agy_boot_config_v3';
   const STORAGE_SKETCH_REVEAL = 'agy_sketch_reveal_v3';
   const STORAGE_TAWA_GREETING = 'agy_tawa_greeting_v3';
+
+  const DEFAULT_BOOT_CONFIG = Object.freeze({
+    autoStep2: true,
+    brandTitle: 'ANTIGRAVITY',
+    brandSub: 'SYNTHESIZE INTELLIGENCE',
+    stage1Title: 'YÊU CẦU QUYỀN TRUY CẬP',
+    stage1Sub: 'ACCESS PERMISSION REQUIRED',
+    stage1Btn: 'CẤP QUYỀN   GRANT ACCESS',
+    stage2Title: 'XÁC MINH DANH TÍNH',
+    stage2Sub: 'IDENTITY VERIFICATION',
+    operatorName: 'SENSEI',
+    operatorUid: '0042',
+    operatorLevel: '∞',
+    stage5Title: 'HOÀN TẤT · ĐÃ XÁC THỰC',
+    stage6Welcome: 'WELCOME TO',
+    stage6Brand: 'ANTIGRAVITY',
+    stage6Status: 'CHÀO MỪNG SENSEI • SESSION READY'
+  });
+
+  function normalizeBootConfig(raw) {
+    const src = (raw && typeof raw === 'object') ? raw : {};
+    const out = { ...DEFAULT_BOOT_CONFIG };
+    out.autoStep2 = src.autoStep2 !== undefined ? Boolean(src.autoStep2) : true;
+    Object.keys(DEFAULT_BOOT_CONFIG).forEach((k) => {
+      if (k === 'autoStep2') return;
+      if (typeof src[k] === 'string' && src[k].trim()) {
+        out[k] = src[k].trim();
+      }
+    });
+    return out;
+  }
+
+  function readBootConfig(init) {
+    try {
+      const raw = localStorage.getItem(STORAGE_BOOT_CONFIG);
+      if (raw !== null) return normalizeBootConfig(JSON.parse(raw));
+    } catch (e) {}
+    return normalizeBootConfig(init && init.bootConfig);
+  }
   const GREETING_RX = /^(?:Hey\s+[^,]{1,40},\s+what\s+should\s+we\s+build\s+today\??|Good\s+to\s+see\s+you,\s+[^.]{1,40}\.\s+What'?s\s+next\??|What\s+(?:should|are)\s+we\s+build(?:ing)?\s+today\??|Welcome\s+back[,.!\s]+[^.!?]{0,40}(?:[.!?]\s*(?:Where\s+should\s+we\s+pick\s+up|What'?s\s+next|What\s+should\s+we\s+build)[^.!?]{0,40}[.!?]?)?|Where\s+should\s+we\s+pick\s+up\??|Ready\s+(?:to\s+build|when\s+you\s+are)[,.!\s]*.*)$/i;
 
   const CHECK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
@@ -360,6 +400,7 @@
     const bootIntro = localStorage.getItem(STORAGE_BOOT_INTRO) !== null
       ? localStorage.getItem(STORAGE_BOOT_INTRO) !== 'false'
       : (init.bootIntro !== undefined ? init.bootIntro : true);
+    const bootConfig = readBootConfig(init);
     const sketchReveal = localStorage.getItem(STORAGE_SKETCH_REVEAL) !== null
       ? localStorage.getItem(STORAGE_SKETCH_REVEAL) !== 'false'
       : (init.sketchReveal !== undefined ? init.sketchReveal : true);
@@ -371,7 +412,7 @@
       customWp, customVideo, savedImages, savedVideos,
       taskVoices, taskVoiceEnabled, taskVoiceVol, customGreetings,
       userAvatar, agentAvatar, glassBlur, avatarSize, avatarRadius,
-      bootIntro, sketchReveal, tawaGreeting
+      bootIntro, bootConfig, sketchReveal, tawaGreeting
     };
     window.__AGY_STATE_CACHE__ = cached;
     return cached;
@@ -1045,6 +1086,10 @@
       }
       if (overrides.bootIntro !== undefined) {
         localStorage.setItem(STORAGE_BOOT_INTRO, String(st.bootIntro));
+      }
+      if (overrides.bootConfig !== undefined) {
+        st.bootConfig = normalizeBootConfig(overrides.bootConfig);
+        localStorage.setItem(STORAGE_BOOT_CONFIG, JSON.stringify(st.bootConfig));
       }
       if (overrides.sketchReveal !== undefined) {
         localStorage.setItem(STORAGE_SKETCH_REVEAL, String(st.sketchReveal));
@@ -2346,8 +2391,9 @@
     STORAGE_WP_ENABLED, STORAGE_WP_MODE, STORAGE_CUSTOM_WP, STORAGE_CUSTOM_VIDEO,
     STORAGE_TASK_VOICE_ENABLED, STORAGE_TASK_VOICE_VOL, STORAGE_CUSTOM_GREETINGS,
     STORAGE_USER_AVATAR, STORAGE_AGENT_AVATAR, STORAGE_GLASS_BLUR,
-    STORAGE_AVATAR_SIZE, STORAGE_AVATAR_RADIUS, STORAGE_BOOT_INTRO,
+    STORAGE_AVATAR_SIZE, STORAGE_AVATAR_RADIUS, STORAGE_BOOT_INTRO, STORAGE_BOOT_CONFIG,
     STORAGE_SKETCH_REVEAL, STORAGE_TAWA_GREETING,
+    DEFAULT_BOOT_CONFIG, normalizeBootConfig,
     CHECK_SVG, INPUT_STYLES,
     escapeHtml, canonicalMediaKey, isSameMediaUrl, deriveMediaName,
     getMediaLibrary, upsertSavedMedia, removeSavedMediaFromStore,
